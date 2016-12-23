@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="x-ua-compatible" content="IE=edge,chrome=1">
+    <meta name="author" content="Neo">
+    <meta name="viewport" content="width=device-width,initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="description" content="圣诞节惊喜大抽奖！">
+    <meta name="keywords" content="圣诞,圣诞节,抽奖">
+
+    <title>圣诞节快乐 - 惊喜大抽奖！</title>
+    <link rel="stylesheet" href="style/iconfont.css">
+    <link rel="stylesheet" href="style/main.css">
+</head>
+<body>
+    <!--<i class="iconfont icon-yinlekai"> </i>-->
+    <div class="content">
+        <div class="game-times">
+            <h2>游戏还有<strong class="red" id="js-gameTime">3</strong>次</h2>
+        </div>
+
+    </div>
+    <div class="mask" id="mask">
+        <div class="popup">
+            <div class="card">
+                <div class="confirm-box phone-box">
+                    <h3>请输入你的手机号</h3>
+                    <p class="sub-title">该手机号作为活动的唯一凭证</p>
+                    <input type="tel" id="js-phoneInput" placeholder="请输入正确的手机号">
+                    <button type="button" class="btn js-OK" id="js-phoneBtn" data-close="phone-box">确&nbsp;认</button>
+                    <button type="button" id="js-ruleBtn" data-close="phone-box" data-open="rule-box"><i class="iconfont icon-handoright"></i>活动详情</button>
+                </div>
+                <div class="confirm-box rule-box">
+                    <h3>活动说明：</h3>
+                    <p>喜迎圣诞节，为答谢全体员工与家人对<strong class="red">火图科技</strong>的支持。特此举办圣诞摇一摇活动。</p>
+                    <p>规则如下：</p>
+                    <p>每人有<strong class="red">3</strong>次机会，以本人手机号作为兑奖凭证。</p>
+                    <p>手机号为员工预留，一位员工可添加一位家庭成员的手机号作为第二抽奖人。</p>
+                    <p>奖品们：</p>
+                    <p>一等奖：<strong class="red">iPhone 7</strong>（1名）</p>
+                    <p>二等奖：<strong class="red">飞利浦电动牙刷</strong>（3名）</p>
+                    <p>三等奖：<strong class="red">毛绒公仔</strong>（5名）</p>
+                    <p>四等奖：<strong class="red">10元微信红包</strong>（10名）</p>
+                    <p>参与奖：<strong class="red">苹果（红富士）一个</strong>（N名）</p>
+                    <button type="button" class="btn js-Close" id="js-Close" data-close="rule-box" data-open="phone-box">关&nbsp;闭</button>
+                </div>
+                <div class="confirm-box gift-box">
+                    <a href="javascript:;" class="js-openGift" id="js-openGift" data-open="result-box">
+                        <img class="gift-image" src="image/gift.png" alt="礼物" data-open="result-box">
+                    </a>
+                </div>
+                <div class="confirm-box result-box">
+                    <div id="js-results"></div>
+                    <button type="button" class="btn js-Close" data-close="rule-box" id="js-ColorResult">关&nbsp;闭</button>
+                </div>
+                <div class="confirm-box sorry-box">
+                    <p>抱歉，你的次数已用玩。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="js-error">搞事情啊！请填写正确的手机号</div>
+</body>
+<script src="script/shake.js"></script>
+<script src="script/DATA.js"></script>
+<script type="text/javascript">
+    window.onload = function() {
+        var phoneBtn = document.querySelector('#js-phoneBtn');
+        var phoneInput = document.querySelector('#js-phoneInput');
+        var nowPhone = '';
+        var nowData = {};
+
+        var myShakeEvent = new Shake({
+            threshold: 15
+        });
+        var flag = false;
+        phoneBtn.addEventListener('click', function () {
+            var value = phoneInput.value;
+            nowPhone = value;
+//            if (localStorage.getItem(value) && );
+            if (isPhone(value)) {
+                User.forEach(function (v) {
+                    if (v.phone == nowPhone) {
+                        nowData.awards = v.awards;
+                        nowData.image = v.image;
+                        nowData.result = v.result;
+                        nowData.desc = v.desc;
+                        flag = true
+                    }
+                });
+                if(!flag) {
+                    nowData.awards = 5;
+                }
+                myShakeEvent.start();
+                var obj = {
+                    used: true,
+                    times: 3
+                };
+                obj = JSON.stringify(obj)
+                localStorage.setItem(nowPhone, obj);
+            }
+        });
+
+
+        window.addEventListener('shake', shakeEventDidOccur, false);
+
+
+        var s = 3;
+        var results = document.querySelector('#js-results');
+        function shakeEventDidOccur () {
+            var times = document.querySelector('#js-gameTime');
+            var game = document.querySelector('.game-times h2');
+            if (nowData.awards == 5) {
+                if (s > 0) {
+                    s--;
+                    times.innerHTML = s;
+                    results.innerHTML = '<p>' + randomMsg() + '</p>';
+                    openBox('gift-box');
+                    myShakeEvent.stop();
+                } else {
+                    game.innerHTML = 'Game Over';
+                    myShakeEvent.stop();
+                }
+            } else {
+                if (s > 1) {
+                    s--;
+                    times.innerHTML = s;
+                    results.innerHTML = '<p>' + randomMsg() + '</p>';
+                    openBox('gift-box');
+                    myShakeEvent.stop();
+                } else if (s > 0) {
+                    s--;
+                    results.innerHTML = '<p>' + nowData.result + '</p><p><img class="result-image" src="'+ nowData.image +'"></p><p>' + nowData.desc + '</p><p><a href="card.html" class="get-link">跳转领取</a></p>';
+                    game.innerHTML = 'Game Over';
+                    myShakeEvent.stop();
+                    openBox('gift-box');
+                } else {
+                    game.innerHTML = 'Game Over';
+                    myShakeEvent.stop();
+                }
+            }
+        }
+
+        function isPhone(value) {
+            var tel = /^1[34578]\d{9}$/;
+            if(tel.test(value)) {
+                closeMask();
+                return true;
+            } else {
+                errorMsg();
+                return false;
+            }
+        }
+
+        function errorMsg() {
+            var error = document.querySelector('#js-error');
+            error.setAttribute('class', 'show');
+            setTimeout(function () {
+                error.setAttribute('class', '');
+            }, 2000);
+        }
+        
+        function closeMask() {
+            var mask = document.querySelector('#mask');
+            mask.style.display = 'none';
+        }
+        
+        function openMask() {
+            var mask = document.querySelector('#mask');
+            mask.style.display = 'block';
+        }
+        function openBox(boxName) {
+            var box = document.querySelectorAll('.confirm-box');
+            var len = box.length;
+            openMask();
+            for (var i = 0; i < len; i++) {
+                var v = box[i];
+                if(v.className.indexOf(boxName) == -1) {
+                    v.style.display = 'none';
+                } else {
+                    v.style.display = 'block';
+                }
+            }
+        }
+        document.querySelector('#js-ruleBtn').addEventListener('click', function (e) {
+            var openName = this.getAttribute('data-open');
+            openBox(openName);
+        });
+        document.querySelector('#js-Close').addEventListener('click', function (e) {
+            var openName = e.target.dataset.open;
+            openBox(openName)
+        });
+
+        document.querySelector('#js-openGift').addEventListener('click', function (e) {
+            var openName = e.target.dataset.open;
+            openBox(openName)
+        });
+
+        document.querySelector('#js-ColorResult').addEventListener('click', function () {
+            var mask = document.querySelector('#mask');
+            mask.style.display = 'none';
+            myShakeEvent.start();
+        })
+    };
+
+    function randomMsg() {
+        var len = Thanks.length;
+        var index = parseInt(len*Math.random());
+        return Thanks[index];
+    }
+    var addRippleEffect = function (e) {
+        var target = e.target;
+        if (target.tagName.toLowerCase() !== 'button') return false;
+        var rect = target.getBoundingClientRect();
+        var ripple = target.querySelector('.ripple');
+        if (!ripple) {
+            ripple = document.createElement('span');
+            ripple.className = 'ripple';
+            ripple.style.height = ripple.style.width = Math.max(rect.width, rect.height) + 'px';
+            target.appendChild(ripple);
+        }
+        ripple.classList.remove('show');
+        var top = e.pageY - rect.top - ripple.offsetHeight / 2 - document.body.scrollTop;
+        var left = e.pageX - rect.left - ripple.offsetWidth / 2 - document.body.scrollLeft;
+        ripple.style.top = top + 'px';
+        ripple.style.left = left + 'px';
+        ripple.classList.add('show');
+        return false;
+    };
+
+    document.addEventListener('click', addRippleEffect, false);
+</script>
+</html>
