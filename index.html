@@ -70,6 +70,7 @@
         var nowPhone = '';
         var nowData = {};
 
+        var record = {used: true, times: 3};
         var myShakeEvent = new Shake({
             threshold: 15
         });
@@ -77,8 +78,15 @@
         phoneBtn.addEventListener('click', function () {
             var value = phoneInput.value;
             nowPhone = value;
-//            if (localStorage.getItem(value) && );
+
+
+            if (localStorage.getItem(value) && getJSON(localStorage.getItem(value))) {
+                var jsonString = localStorage.getItem(value);
+                var result = getJSON(jsonString);
+                console.log(result.times)
+            }
             if (isPhone(value)) {
+
                 User.forEach(function (v) {
                     if (v.phone == nowPhone) {
                         nowData.awards = v.awards;
@@ -92,12 +100,6 @@
                     nowData.awards = 5;
                 }
                 myShakeEvent.start();
-                var obj = {
-                    used: true,
-                    times: 3
-                };
-                obj = JSON.stringify(obj)
-                localStorage.setItem(nowPhone, obj);
             }
         });
 
@@ -117,6 +119,7 @@
                     results.innerHTML = '<p>' + randomMsg() + '</p>';
                     openBox('gift-box');
                     myShakeEvent.stop();
+                    setJSON(nowData.phone, s);
                 } else {
                     game.innerHTML = 'Game Over';
                     myShakeEvent.stop();
@@ -128,12 +131,14 @@
                     results.innerHTML = '<p>' + randomMsg() + '</p>';
                     openBox('gift-box');
                     myShakeEvent.stop();
+                    setJSON(nowData.phone, s);
                 } else if (s > 0) {
                     s--;
                     results.innerHTML = '<p>' + nowData.result + '</p><p><img class="result-image" src="'+ nowData.image +'"></p><p>' + nowData.desc + '</p><p><a href="card.html" class="get-link">跳转领取</a></p>';
                     game.innerHTML = 'Game Over';
                     myShakeEvent.stop();
                     openBox('gift-box');
+                    setJSON(nowData.phone, s);
                 } else {
                     game.innerHTML = 'Game Over';
                     myShakeEvent.stop();
@@ -200,7 +205,16 @@
             var mask = document.querySelector('#mask');
             mask.style.display = 'none';
             myShakeEvent.start();
-        })
+        });
+        
+        function getJSON(obj) {
+            return JSON.parse(obj);
+        }
+
+        function setJSON(key, val) {
+            var obj = JSON.stringify(val);
+            localStorage.setItem(key, obj);
+        }
     };
 
     function randomMsg() {
